@@ -1,2 +1,2 @@
 # SatInView
-Satelites in the View
+Satellites in the View
