@@ -109,7 +109,7 @@ def filter_unconnected_white_pixels(snapshots):
     return snapshots
 
 def wait_until_target_time():
-    target_seconds = {13, 28, 43, 58}
+    target_seconds = {12, 27, 42, 57}
     while True:
         current_second = datetime.utcnow().second
         if current_second in target_seconds:
