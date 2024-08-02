@@ -28,7 +28,14 @@ pip install -r starlink-grpc-tools/requirements.txt
 ```
 
 ## Re-generate paper results
+Run `snr.py` to collect new traces for Starlink satellite obstruction data. You will have the ` white_pixel_coordinates_xor.csv ` file.
 
+Run `findmatch.ipynb` notebook to first create the `processed_observed_data.csv` containing the topocentric coordinates of the observed satellites and then to find 
+the matching satellites and have the `matched_satellite_data.csv` dataset. 
+
+Ensure you set your location, dish orientation, and the data collection time duration in the cade accordingly. 
+
+To re-generate the figures in the paper you can run the  `figure.ipynb` notebook.
 ...
 
 ## Collect new data
