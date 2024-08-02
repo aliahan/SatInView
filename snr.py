@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 
-import sys
 import os
-import numpy as np
-import time
-sys.path.append(os.path.abspath('./starlink-grpc-tools-main'))
-import starlink_grpc
-from datetime import datetime
-import matplotlib.pyplot as plt
 import csv
-from datetime import timedelta
+import sys
+import time
+import numpy as np
+import matplotlib.pyplot as plt
+
 from scipy.ndimage import label
+from datetime import datetime, timedelta
+from skyfield.api import load, wgs84, utc
+
+sys.path.append(os.path.abspath('./starlink-grpc-tools'))
+import starlink_grpc
+
 
 def capture_snr_data(duration_seconds, interval_seconds, context):
     snapshots = []
@@ -29,6 +32,7 @@ def capture_snr_data(duration_seconds, interval_seconds, context):
 
     return snapshots
 
+
 def save_white_pixel_coordinates(snapshots, start_time):
     white_pixel_coords = set()  # Use a set to store unique coordinates
     for snr_data in snapshots:
@@ -41,6 +45,7 @@ def save_white_pixel_coordinates(snapshots, start_time):
         for coord in sorted(white_pixel_coords):  # Sort coordinates for consistency
             f.write(f"{coord}\n")
         f.write("\n")
+
 
 def plot_snr_traces(all_snapshots, start_times, end_times, r):
     plt.figure(figsize=(30, 40))  # Increase the figure size for better resolution
@@ -58,6 +63,7 @@ def plot_snr_traces(all_snapshots, start_times, end_times, r):
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])  # Adjust layout for the main title
     plt.savefig('trajectory2.png')
     plt.show()
+
 
 def save_white_pixel_coordinates_xor(snapshots, start_time):
     # Parse start_time back to a datetime object
@@ -90,11 +96,12 @@ def save_white_pixel_coordinates_xor(snapshots, start_time):
         for coord in white_pixel_coords:
             writer.writerow([coord[0].strftime("%Y-%m-%d %H:%M:%S"), coord[1][0], coord[1][1]])
 
+
 def filter_unconnected_white_pixels(snapshots):
     final_snapshot = snapshots[-1]
     labeled_array, num_features = label(final_snapshot)
     connected_pixels = set()
-    
+
     for i in range(1, num_features + 1):
         coords = np.argwhere(labeled_array == i)
         if len(coords) > 1:  # More than one pixel in the component
@@ -108,6 +115,7 @@ def filter_unconnected_white_pixels(snapshots):
     snapshots[-1] = filtered_snapshot
     return snapshots
 
+
 def wait_until_target_time():
     target_seconds = {12, 27, 42, 57}
     while True:
@@ -116,16 +124,27 @@ def wait_until_target_time():
             break
         time.sleep(0.5)
 
+
+def load_satellites():
+    stations_url = 'https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle'
+    satellites = load.tle_file(stations_url)
+    print('Loaded', len(satellites), 'satellites')
+    return satellites
+
+
 def main():
+    load_satellites()
+
     # Initialize the gRPC context
     context = starlink_grpc.ChannelContext(target="192.168.100.1:9200")
 
     all_snapshots = []
     start_times = []
     end_times = []
-    r = 3000
+    r = 500
 
-    for _ in range(r):
+    for i in range(r):
+        print("Round {}/{}".format(i, r))
         wait_until_target_time()
         starlink_grpc.reset_obstruction_map(context)
         duration_seconds = 14
@@ -134,10 +153,10 @@ def main():
         S = datetime.utcnow() - timedelta(seconds=1)
         start_time= S.strftime("%Y-%m-%d %H:%M:%S")
         snapshots = capture_snr_data(duration_seconds, interval_seconds, context)
-        
+
         # Filter unconnected white pixels in the last snapshot
         # snapshots = filter_unconnected_white_pixels(snapshots)
-        
+
         end_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
         all_snapshots.append(snapshots)
@@ -152,6 +171,7 @@ def main():
 
     # Plot all the traces
     # plot_snr_traces(all_snapshots, start_times, end_times, r)
+
 
 if __name__ == "__main__":
     main()
