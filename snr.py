@@ -71,7 +71,7 @@ def save_white_pixel_coordinates_xor(snapshots, start_time):
     previous_snr_data = np.zeros_like(snapshots[0][1])
     white_pixel_coords = []
 
-    with open('white_pixel_coordinates_xor714.csv', 'a', newline='') as csvfile:
+    with open('white_pixel_coordinates_xor.csv', 'a', newline='') as csvfile:
         writer = csv.writer(csvfile)
         i = 0
         hold_coord = None  # Initialize as None
