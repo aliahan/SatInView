@@ -97,7 +97,7 @@ def main():
         duration_seconds = 14
         interval_seconds = 1  # Capture a snapshot every 1 second
 
-        S = datetime.utcnow() 
+        S = datetime.utcnow()
         start_time= S.strftime("%Y-%m-%d %H:%M:%S")
         snapshots = capture_snr_data(duration_seconds, interval_seconds, context)
 
