@@ -1,0 +1,6 @@
+.ipynb_checkpoints
+__pycache__/
+starlink-grpc-tools/__pycache__/
+data/
+gp.php
+.venv/
