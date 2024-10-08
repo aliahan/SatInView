@@ -1,20 +1,25 @@
 #!/usr/bin/env python3
 
-import os
 import csv
+import logging
 import sys
 import time
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
 import numpy as np
+from skyfield.api import load
 
-from scipy.ndimage import label
-from datetime import datetime, timedelta
-from skyfield.api import load, wgs84, utc
+from config import STARLINK_GRPC_ADDR_PORT, TLE_URL, TLE_DATA_DIR, DURATION_SECONDS, DISH_ID
+from util import date_time_string, ensure_directory, ensure_data_directory
 
-sys.path.append(os.path.abspath('./starlink-grpc-tools'))
+sys.path.insert(0,str(Path('./starlink-grpc-tools').resolve()))
 import starlink_grpc
 
-dish_id="test"
-exp_round=1
+
+satellites = None
+
+logger = logging.getLogger(__name__)
 
 
 def capture_snr_data(duration_seconds, interval_seconds, context):
@@ -35,12 +40,12 @@ def capture_snr_data(duration_seconds, interval_seconds, context):
     return snapshots
 
 
-def save_white_pixel_coordinates_xor(snapshots, start_time):
+def save_white_pixel_coordinates_xor(directory, filename, snapshots, start_time):
     start_time_dt = datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
     previous_snr_data = np.zeros_like(snapshots[0][1])
     white_pixel_coords = []
 
-    with open('white_pixel_coordinates_xor-{}.csv'.format(dish_id), 'a', newline='') as csvfile:
+    with open("{}/obstruction-data-{}-{}.csv".format(directory, DISH_ID, filename), 'a', newline='') as csvfile:
         writer = csv.writer(csvfile)
         i = 0
         hold_coord = None  # Initialize as None
@@ -68,47 +73,58 @@ def save_white_pixel_coordinates_xor(snapshots, start_time):
 def wait_until_target_time():
     target_seconds = {12, 27, 42, 57}
     while True:
-        current_second = datetime.utcnow().second
+        current_second = datetime.now(timezone.utc).second
         if current_second in target_seconds:
             break
         time.sleep(0.5)
 
 
 def load_satellites():
-    stations_url = 'https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle'
-    satellites = load.tle_file(stations_url)
-    print('Loaded', len(satellites), 'satellites')
-    return satellites
+    global satellites
+    directory = Path(TLE_DATA_DIR).joinpath(ensure_data_directory(TLE_DATA_DIR))
+    satellites = load.tle_file(TLE_URL, True, "{}/starlink-tle-{}.txt".format(directory, date_time_string()))
+    logging.info("Loaded {} Starlink satellites".format(len(satellites)))
 
 
-def main():
+def collect_obstruction_data():
     load_satellites()
 
-    context = starlink_grpc.ChannelContext(target="192.168.100.1:9200")
+    start = datetime.now(timezone.utc)
+    context = starlink_grpc.ChannelContext(target=STARLINK_GRPC_ADDR_PORT)
 
     all_snapshots = []
     start_times = []
     end_times = []
 
-    for i in range(exp_round):
-        print("Round {}/{}".format(i, exp_round))
+    timeslot_duration_seconds = 14
+    interval_seconds = 1  # Capture a snapshot every 1 second
+
+    round = 0
+
+    directory = Path(TLE_DATA_DIR).joinpath(ensure_data_directory(TLE_DATA_DIR))
+    ensure_directory(str(directory))
+    filename = date_time_string()
+
+    while True:
+        now = datetime.now(timezone.utc)
+        if now - start >= timedelta(seconds=DURATION_SECONDS):
+            return
+
+        round += 1
+        logging.info("Current round {}".format(round))
+
         wait_until_target_time()
+
         starlink_grpc.reset_obstruction_map(context)
-        duration_seconds = 14
-        interval_seconds = 1  # Capture a snapshot every 1 second
 
-        S = datetime.utcnow()
-        start_time= S.strftime("%Y-%m-%d %H:%M:%S")
-        snapshots = capture_snr_data(duration_seconds, interval_seconds, context)
+        start_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
-        end_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        snapshots = capture_snr_data(timeslot_duration_seconds, interval_seconds, context)
+
+        end_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
         all_snapshots.append(snapshots)
         start_times.append(start_time)
         end_times.append(end_time)
 
-        save_white_pixel_coordinates_xor(snapshots, start_time)
-
-
-if __name__ == "__main__":
-    main()
+        save_white_pixel_coordinates_xor(directory, filename, snapshots, start_time)
