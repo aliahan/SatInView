@@ -100,11 +100,13 @@ Thus, in addition to the method presented in the LEO-NET'24 paper, our post-proc
 1. Edit [`config.py`](./config.py), set `IFCE` to the interface connected to Starlink. Set `DISH_ID` to the ID of the dish.
 2. If IRTT tests are used, set `ENABLE_IRTT` to `True`, set `LOCAL_IP` to the local IP address for the Starlink interface `IFCE`, and set `IRTT_SERVER_PORT` to the IRTT server address and port.
 3. The gateway of inactive Starlink dishes can be reached at `fe80::200:5eff:fe00:101`, which requires the stock Starlink router to be set in the `bypass` mode.
-4. You may need to install the `iputils-ping` package instead of the `inetutils-ping` package on Debian-based systems to use the `-D` timestamp option. You may also need to assign root privileges to the `ping` command to use the packet intervals less than 200ms.
+4. You may need to install the `iputils-ping` package instead of the `inetutils-ping` package on Debian-based systems to use the `-D` timestamp option.
 ```bash
 apt list --installed | grep ping
 ```
-5. By default, the scheduling of tasks are defined in `main.py` as follows, which can be modified as needed.
+5. You may also need to assign root privileges to the `ping` command to use the packet intervals less than 200ms, or install [`iputils-ping>=20210722`](https://github.com/iputils/iputils/releases/tag/20210722), which [lowered the limit to 2ms](https://github.com/iputils/iputils/issues/317).
+
+6. By default, the scheduling of tasks are defined in `main.py` as follows, which can be modified as needed.
 
 ```python
 if ENABLE_IRTT:
