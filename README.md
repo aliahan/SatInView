@@ -7,7 +7,7 @@ Table of Contents
 
 * [Background](#background)
 * [Prerequisites](#prerequisites)
-* [Get new results](#get-new-results)
+* [Gather new data](#get-new-results)
 * [Re-generate paper results](#re-generate-paper-results)
 
 ## Background
@@ -135,7 +135,7 @@ grpcurl -plaintext -d {\"get_location\":{}} 192.168.100.1:9200 SpaceX.API.Device
 
 The GPS location is requied to calculate and estimate the selected and serving satellites in post-processing.
 
-## Get new results
+## Gather new data
 
 Run `main.py` to collect the latency data to Starlink gateway (`100.64.0.1`) and the satellite tragetory data from the obstruction map.
 
