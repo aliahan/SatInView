@@ -7,7 +7,7 @@ Table of Contents
 
 * [Background](#background)
 * [Prerequisites](#prerequisites)
-* [Gather new data](#get-new-results)
+* [Gather new data](#gather-new-data)
 * [Re-generate paper results](#re-generate-paper-results)
 
 ## Background
