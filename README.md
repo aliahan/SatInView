@@ -162,9 +162,11 @@ data
 
 ## Re-generate paper results
 
-Run `findmatch.ipynb` notebook to first create the `processed_observed_data.csv` containing the topocentric coordinates of the observed satellites and then to find
+Thank you for your interest in our work. To replicate our results precisely, you will need to have the exact GPS location, UT orientation, and TLE data from the specific time of observation for that UT. Due to privacy concerns, I cannot share this information. However, I encourage you to gather data from your own UT and attempt to replicate the results at your location.
+
+After gathering the data, run `findmatch.ipynb` notebook to first create the `processed_observed_data.csv` containing the topocentric coordinates of the observed satellites and then to find
 the matching satellites and have the `matched_satellite_data.csv` dataset.
 
-Ensure you set your location, dish orientation, and the data collection time duration in the cade accordingly.
+Ensure you set your location, dish orientation, and the data collection time duration in the code accordingly.
 
 To re-generate the figures in the paper you can run the  `figure.ipynb` notebook.
