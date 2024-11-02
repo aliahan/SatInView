@@ -58,9 +58,16 @@ Example output from `grpcurl -plaintext -d {\"dish_get_obstruction_map\":{}} 192
 }
 ```
 
-Based on our measurement and observation, the meaning of `mapReferenceFrame` ...
+Based on our measurement and observation, the `mapReferenceFrame` specifies the coordinate system used for the obstruction map data.
 
-Our observation shows most active Starlink dishes shows `FRAME_EARTH`, most likely because ..., while dishes on `Roam`/`Mobile` or inactive dishes shows `FRAME_UT`, partially because ...
+The possible values for `mapReferenceFrame` are:
+
+- **FRAME_UNKNOWN (0)**: The reference frame is unspecified.
+- **FRAME_EARTH (1)**: The obstruction map is aligned with the Earth and uses a fixed geographic coordinate system, with the top center pixel oriented toward the true north.
+- **FRAME_UT (2)**: The obstruction map is aligned with the User Terminal, using a coordinate system relative to the dish's orientation. The bottom center pixel corresponds to the UT's boresight direction.
+
+
+Our observation shows that most active Starlink dishes show `FRAME_EARTH`, most likely because they are in fixed, stationary locations and utilize a geographic coordinate system to track obstructions more efficiently, while dishes on `Roam`/`Mobile` or inactive dishes show `FRAME_UT`, partially because these dishes are often moved or relocated, requiring a coordinate system relative to the dish’s orientation to adapt dynamically to changing positions or conditions.
 
 Thus, in addition to the method presented in the LEO-NET'24 paper, our post-processing involves an additional two-step process:
 
