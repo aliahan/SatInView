@@ -69,7 +69,7 @@ The possible values for `mapReferenceFrame` are:
 
 Our observation shows that most active Starlink dishes show `FRAME_EARTH`, most likely because they are in fixed, stationary locations and utilize a geographic coordinate system to track obstructions more efficiently, while dishes on `Roam`/`Mobile` or inactive dishes show `FRAME_UT`, partially because these dishes are often moved or relocated, requiring a coordinate system relative to the dish’s orientation to adapt dynamically to changing positions or conditions.
 
-Thus, in addition to the method presented in the LEO-NET'24 paper, our post-processing involves an additional two-step process:
+Thus, in addition to the method presented in the LEO-NET'24 paper, we also included the data processing notebook for UTs using `FRAME_EARTH`.
 
 ...
 
@@ -93,7 +93,7 @@ Thus, in addition to the method presented in the LEO-NET'24 paper, our post-proc
     pip install -r starlink-grpc-tools/requirements.txt
     ```
 
-    **Note**: On a dual-homed machine connected to an inactive Starlink dish (i.e., without an active Starlink subscription), the Starlink router still advertises an IPv6 address to the local network. `Pip` would prefer to use IPv6 when installing packages, while an inactive dish cannot reach the Internet, which could halt the installation process. In this case, you can force `pip` to use IPv4 by setting the IPv4 addresses for the following doamins in `/etc/hosts` or configure routing properly.
+    **Note**: On a dual-homed machine connected to an inactive Starlink dish (i.e., without an active Starlink subscription), the Starlink router still advertises an IPv6 address to the local network. `Pip` would prefer to use IPv6 when installing packages, while an inactive dish cannot reach the Internet, which could halt the installation process. In this case, you can force `pip` to use IPv4 by setting the IPv4 addresses for the following domains in `/etc/hosts` or configure routing properly.
 
     ```
     151.101.0.223   pypi.org
@@ -104,16 +104,16 @@ Thus, in addition to the method presented in the LEO-NET'24 paper, our post-proc
 
 ### Set variables
 
-1. Edit [`config.py`](./config.py), set `IFCE` to the interface connected to Starlink. Set `DISH_ID` to the ID of the dish.
+1. Edit [`config.py`](./config.py), and set `IFCE` to the interface connected to Starlink. Set `DISH_ID` to the ID of the dish.
 2. If IRTT tests are used, set `ENABLE_IRTT` to `True`, set `LOCAL_IP` to the local IP address for the Starlink interface `IFCE`, and set `IRTT_SERVER_PORT` to the IRTT server address and port.
 3. The gateway of inactive Starlink dishes can be reached at `fe80::200:5eff:fe00:101`, which requires the stock Starlink router to be set in the `bypass` mode.
 4. You may need to install the `iputils-ping` package instead of the `inetutils-ping` package on Debian-based systems to use the `-D` timestamp option.
 ```bash
 apt list --installed | grep ping
 ```
-5. You may also need to assign root privileges to the `ping` command to use the packet intervals less than 200ms, or install [`iputils-ping>=20210722`](https://github.com/iputils/iputils/releases/tag/20210722), which [lowered the limit to 2ms](https://github.com/iputils/iputils/issues/317).
+5. You may also need to assign root privileges to the `ping` command to use the packet intervals less than 200ms or install [`iputils-ping>=20210722`](https://github.com/iputils/iputils/releases/tag/20210722), which [lowered the limit to 2ms](https://github.com/iputils/iputils/issues/317).
 
-6. By default, the scheduling of tasks are defined in `main.py` as follows, which can be modified as needed.
+6. By default, task scheduling is defined in `main.py` as follows, which can be modified as needed.
 
 ```python
 if ENABLE_IRTT:
@@ -133,11 +133,11 @@ You can get the GPS location of your dish by running the following command, whic
 grpcurl -plaintext -d {\"get_location\":{}} 192.168.100.1:9200 SpaceX.API.Device.Device/Handle
 ```
 
-The GPS location is requied to calculate and estimate the selected and serving satellites in post-processing.
+The GPS location is required to calculate and estimate the selected and serving satellites in post-processing.
 
 ## Gather new data
 
-Run `main.py` to collect the latency data to Starlink gateway (`100.64.0.1`) and the satellite tragetory data from the obstruction map.
+Run `main.py` to collect the latency data to the Starlink gateway (`100.64.0.1`) and the satellite trajectory data from the obstruction map.
 
 By default, the data structure of the collected data is as follows:
 
@@ -164,9 +164,10 @@ data
 
 Thank you for your interest in our work. To replicate our results precisely, you will need to have the exact GPS location, UT orientation, and TLE data from the specific time of observation for that UT. Due to privacy concerns, I cannot share this information. However, I encourage you to gather data from your own UT and attempt to replicate the results at your location.
 
-After gathering the data, run `findmatch.ipynb` notebook to first create the `processed_observed_data.csv` containing the topocentric coordinates of the observed satellites and then to find
+
+After gathering the data, run `findmatch-FrameUT.ipynb` notebook if your dish uses `FRAME_UT` or `findmatch-FrameEarth.ipynb` notebook if your dish uses `FRAME_EARTH`,  to first create the `processed_observed_data.csv` containing the topocentric coordinates of the observed satellites and then to find
 the matching satellites and have the `matched_satellite_data.csv` dataset.
 
-Ensure you set your location, dish orientation, and the data collection time duration in the code accordingly.
+Ensure you set your location, dish orientation, and data collection time in the code accordingly, and use the TLE data from the exact time of data collection.
 
 To re-generate the figures in the paper you can run the  `figure.ipynb` notebook.
