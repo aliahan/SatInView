@@ -69,9 +69,8 @@ The possible values for `mapReferenceFrame` are:
 
 Our observation shows that most active Starlink dishes show `FRAME_EARTH`, most likely because they are in fixed, stationary locations and utilize a geographic coordinate system to track obstructions more efficiently, while dishes on `Roam`/`Mobile` or inactive dishes show `FRAME_UT`, partially because these dishes are often moved or relocated, requiring a coordinate system relative to the dish’s orientation to adapt dynamically to changing positions or conditions.
 
-Thus, in addition to the method presented in the LEO-NET'24 paper, we also included the data processing notebook for UTs using `FRAME_EARTH`.
+Thus, in addition to the method presented in the LEO-NET'24 paper, we also included the data processing notebook for UTs using `FRAME_EARTH`. 
 
-...
 
 ## Prerequisites
 
