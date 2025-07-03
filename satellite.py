@@ -29,7 +29,8 @@ def capture_snr_data(duration_seconds, interval_seconds, context):
     while time.time() < end_time:
         try:
             snr_data = starlink_grpc.obstruction_map(context)
-            snr_data_array = np.array(snr_data, dtype=int)
+            snr_data_array = np.array(snr_data, dtype=float)
+            snr_data_array = (snr_data_array > 0).astype(int)
             snr_data_array[snr_data_array == -1] = 0
             snapshots.append(snr_data_array)
             time.sleep(interval_seconds)
